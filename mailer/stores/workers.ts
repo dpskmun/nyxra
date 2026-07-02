@@ -1,0 +1,1 @@
+export const workers = new Map<string, Worker>();
