@@ -104,6 +104,9 @@ self.onmessage = async (event) => {
     let jobIcal = "";
     if (job.job.icalEvent)
       jobIcal = await (await fetch(job.job.icalEvent.url)).text();
+    let apijobIcal = "";
+    if (data.apiIcalEvent)
+      apijobIcal = await (await fetch(data.apiIcalEvent.url)).text();
     const valueReplacerData = await csvEmailsMap(job.job.valuesCsv);
     try {
       const unsubscribeLink = await unsubscribeUrl(
@@ -118,9 +121,18 @@ self.onmessage = async (event) => {
           const userData = valueReplacerData.data[emailData.data.email][0];
           Object.entries(userData).forEach(([key, value]) => {
             const placeholder = new RegExp(`\\{\\^\\(${key}\\)\\^\\}`, "gi");
-            if (jobHtml) htmlContent = jobHtml.replaceAll(placeholder, value);
-            if (jobText) textContent = jobText.replaceAll(placeholder, value);
+            if (jobHtml) htmlContent = htmlContent.replaceAll(placeholder, value);
+            if (jobText) textContent = textContent.replaceAll(placeholder, value);
           });
+        }
+        if (data.apiValueReplace) {
+          data.apiValueReplace.forEach(
+            ({ key, value }: { key: string; value: string }) => {
+              const placeholder = new RegExp(`\\{\\^\\(${key}\\)\\^\\}`, "gi");
+              if (jobHtml) htmlContent = htmlContent.replaceAll(placeholder, value);
+              if (jobText) textContent = textContent.replaceAll(placeholder, value);
+            },
+          );
         }
         if (unsubscribeLink.success && job.job.emailType !== "TRANSACTIONAL") {
           const unsubscribePlaceholder = new RegExp(
@@ -128,17 +140,49 @@ self.onmessage = async (event) => {
             "gi",
           );
           if (jobHtml)
-            htmlContent = jobHtml.replaceAll(
+            htmlContent = htmlContent.replaceAll(
               unsubscribePlaceholder,
               unsubscribeLink.url,
             );
           if (jobText)
-            textContent = jobText.replaceAll(
+            textContent = textContent.replaceAll(
               unsubscribePlaceholder,
               unsubscribeLink.url,
             );
         }
       }
+      const attachementsAppend = [
+        ...(job.job.attachments ?? []).map((attachement) => ({
+          filename: attachement.filename,
+          path: attachement.filelink,
+        })),
+        ...(data.apiAttachments ?? []).map(
+          (attachement: { filename: string; filelink: string }) => ({
+            filename: attachement.filename,
+            path: attachement.filelink,
+          }),
+        ),
+      ];
+      const dbIcalEvent = job.job.icalEvent
+        ? {
+            filename: job.job.icalEvent?.name,
+            method: job.job.icalEvent?.method,
+            content: jobIcal,
+          }
+        : null;
+      const apiIcalEvent = data.apiIcalEvent
+        ? {
+            filename: data.apiIcalEvent.name,
+            method: data.apiIcalEvent.method,
+            content: apijobIcal,
+          }
+        : null;
+      const icalEvent = dbIcalEvent || apiIcalEvent;
+      const apiHeader = Object.fromEntries(
+        (data.apiMailHeaders as { key: string; value: string }[] ?? []).map(
+          ({ key, value }) => [key, value],
+        ),
+      );
       const id = await mailTransporter.sendMail({
         priority:
           job.job.priority === "HIGH"
@@ -148,6 +192,7 @@ self.onmessage = async (event) => {
               : "normal",
         headers: {
           ...jobHeaders,
+          ...apiHeader,
           ...(job.job.emailType === "BULK" && { Precedence: "bulk" }),
           ...(job.job.emailType === "LIST" && { Precedence: "list" }),
           ...(job.job.emailType === "SPAM" && { Precedence: "junk" }),
@@ -190,17 +235,14 @@ self.onmessage = async (event) => {
         ...(job.job.replyTo && { replyTo: job.job.replyTo }),
         ...(job.job.textTemplate && { text: textContent }),
         ...(job.job.htmlTemplate && { html: htmlContent }),
-        ...(job.job.attachments.length > 0 && {
-          attachments: job.job.attachments.map((attachement) => ({
-            filename: attachement.filename,
-            path: attachement.filelink,
-          })),
+        ...(attachementsAppend.length > 0 && {
+          attachments: attachementsAppend,
         }),
-        ...(job.job.icalEvent && {
+        ...(icalEvent && {
           icalEvent: {
-            filename: job.job.icalEvent?.name,
-            method: job.job.icalEvent?.method,
-            content: jobIcal,
+            filename: icalEvent.filename,
+            method: icalEvent.method,
+            content: icalEvent.content,
           },
         }),
       });
@@ -236,7 +278,7 @@ self.onmessage = async (event) => {
         setTimeout(resolve, mailingCreds.rateLimitMS),
       );
     }
-     await prisma.configuration.update({
+    await prisma.configuration.update({
       where: {
         id: data.jobId,
       },

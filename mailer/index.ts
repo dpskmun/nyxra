@@ -142,7 +142,46 @@ const apiWorkerRedis = await getApiWorker();
     const parsedData = JSON.parse(data);
     if (typeof parsedData !== "object" || parsedData === null) return;
     if (!("jobId" in parsedData) || !("emailId" in parsedData)) return;
-    const { jobId, emailId } = parsedData as { jobId: string; emailId: string };
+    const {
+      jobId,
+      emailId,
+      apiAttachments,
+      apiIcalEvent,
+      apiMailHeaders,
+      apiValueReplace,
+    } = parsedData as {
+      jobId: string;
+      emailId: string;
+      apiAttachments?: { filename: string; filelink: string }[];
+      apiIcalEvent?: { name: string; method: string; url: string };
+      apiMailHeaders?: { key: string; value: string }[];
+      apiValueReplace?: { key: string; value: string }[];
+    };
+
+    if (
+      apiAttachments &&
+      (!Array.isArray(apiAttachments) ||
+        apiAttachments.some((att) => !att.filename || !att.filelink))
+    )
+      return;
+    if (
+      apiIcalEvent &&
+      (!apiIcalEvent.name || !apiIcalEvent.method || !apiIcalEvent.url)
+    )
+      return;
+    if (
+      apiMailHeaders &&
+      (!Array.isArray(apiMailHeaders) ||
+        apiMailHeaders.some((header) => !header.key || !header.value))
+    )
+      return;
+    if (
+      apiValueReplace &&
+      (!Array.isArray(apiValueReplace) ||
+        apiValueReplace.some((replace) => !replace.key || !replace.value))
+    )
+      return;
+
     const getJobResult = await getJob(jobId);
     if (!getJobResult.success) return;
     const jobData = getJobResult.job;
@@ -221,7 +260,7 @@ const apiWorkerRedis = await getApiWorker();
     }
     await prisma.toList.update({
       data: {
-        status: "VALIDATED"
+        status: "VALIDATED",
       },
       where: {
         id: emailId,
@@ -229,7 +268,17 @@ const apiWorkerRedis = await getApiWorker();
         status: "VALIDATING",
       },
     });
-    workerModule.postMessage({ type: "start", data: { jobId, emailId } });
+    workerModule.postMessage({
+      type: "start",
+      data: {
+        jobId,
+        emailId,
+        ...(apiAttachments && { apiAttachments }),
+        ...(apiIcalEvent && { apiIcalEvent }),
+        ...(apiMailHeaders && { apiMailHeaders }),
+        ...(apiValueReplace && { apiValueReplace }),
+      },
+    });
   } catch (err) {
     if (err instanceof Error && err.message.includes("Connection closed"))
       return;

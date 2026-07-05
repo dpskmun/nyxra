@@ -153,8 +153,8 @@ self.onmessage = async (event) => {
             const userData = valueReplacerData.data[email.email][0];
             Object.entries(userData).forEach(([key, value]) => {
               const placeholder = new RegExp(`\\{\\^\\(${key}\\)\\^\\}`, "gi");
-              if (jobHtml) htmlContent = jobHtml.replaceAll(placeholder, value);
-              if (jobText) textContent = jobText.replaceAll(placeholder, value);
+              if (jobHtml) htmlContent = htmlContent.replaceAll(placeholder, value);
+              if (jobText) textContent = textContent.replaceAll(placeholder, value);
             });
           }
           if (unsubscribeLink.success && job.job.emailType !== "TRANSACTIONAL") {
@@ -163,12 +163,12 @@ self.onmessage = async (event) => {
               "gi",
             );
             if (jobHtml)
-              htmlContent = jobHtml.replaceAll(
+              htmlContent = htmlContent.replaceAll(
                 unsubscribePlaceholder,
                 unsubscribeLink.url,
               );
             if (jobText)
-              textContent = jobText.replaceAll(
+              textContent = textContent.replaceAll(
                 unsubscribePlaceholder,
                 unsubscribeLink.url,
               );
