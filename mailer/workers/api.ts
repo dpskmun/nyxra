@@ -122,7 +122,7 @@ self.onmessage = async (event) => {
             if (jobText) textContent = jobText.replaceAll(placeholder, value);
           });
         }
-        if (unsubscribeLink.success) {
+        if (unsubscribeLink.success && job.job.emailType !== "TRANSACTIONAL") {
           const unsubscribePlaceholder = new RegExp(
             `\\{\\^\\(UNSUBSCRIBE_URL\\)\\^\\}`,
             "gi",
