@@ -9,8 +9,12 @@ import { validateEmailSecond } from "./services/email.validation/second.index";
 import { updateAllToList } from "./services/toList.update.all";
 import { prisma } from "./lib/prisma";
 import { getinUse } from "./services/inUse.get";
+import { getApiWorker } from "./lib/apiWorker";
+import { apiWorker } from "./stores/apiWorker";
+import { getEmail } from "./services/getEmail";
 
 const workerRedis = await getWorker();
+const apiWorkerRedis = await getApiWorker();
 
 (async function processQueue() {
   try {
@@ -20,6 +24,7 @@ const workerRedis = await getWorker();
     const getJobResult = await getJob(jobId);
     if (!getJobResult.success) return;
     const jobData = getJobResult.job;
+    if (jobData.accessEndPoint) return;
     if (jobData.status !== "DRAFT") return;
     const workerModule = new Worker(
       new URL("./workers/index.ts", import.meta.url).href,
@@ -65,13 +70,14 @@ const workerRedis = await getWorker();
         checksecond_valid.set(emailList[0], emailList[1]);
     }
     await Promise.all(
-      [...invalid_email.entries()].map(([id]) =>
-        prisma.toList.update({
-          where: { id: id },
-          data: {
-            status: "FAILED",
-          },
-        }),
+      [...invalid_email.entries()].map(
+        async ([id]) =>
+          await prisma.toList.update({
+            where: { id: id },
+            data: {
+              status: "FAILED",
+            },
+          }),
       ),
     );
     const unsubscribeFailed = await prisma.toList.updateManyAndReturn({
@@ -83,9 +89,11 @@ const workerRedis = await getWorker();
         status: "FAILED",
       },
     });
-    await unsubscribeFailed.map(({ id }) => {
-      checksecond_valid.delete(id);
-    });
+    await Promise.all(
+      unsubscribeFailed.map(async ({ id }) => {
+        checksecond_valid.delete(id);
+      }),
+    );
     const isUseResult = await getinUse(
       jobData.sesConfigurationId,
       jobData.smtpId,
@@ -122,5 +130,112 @@ const workerRedis = await getWorker();
     await new Promise((res) => setTimeout(res, 1000));
   } finally {
     setImmediate(processQueue);
+  }
+})();
+
+(async function apiQueue() {
+  try {
+    const job = await apiWorkerRedis.brpop(redisConfig.API_QUEUE, 0);
+    if (!job) return;
+    const [jobType, data] = job;
+    if (!data) return;
+    const parsedData = JSON.parse(data);
+    if (typeof parsedData !== "object" || parsedData === null) return;
+    if (!("jobId" in parsedData) || !("emailId" in parsedData)) return;
+    const { jobId, emailId } = parsedData as { jobId: string; emailId: string };
+    const getJobResult = await getJob(jobId);
+    if (!getJobResult.success) return;
+    const jobData = getJobResult.job;
+    if (!jobData.accessEndPoint) return;
+    if (jobData.status !== "API") return;
+    const workerModule = new Worker(
+      new URL("./workers/api.ts", import.meta.url).href,
+      {
+        type: "module",
+        name: jobId,
+      },
+    );
+    apiWorker.set(jobId, workerModule);
+    const emailGet = await getEmail(jobId, emailId);
+    if (!emailGet.success) return;
+    const emailData = emailGet.data;
+    await prisma.toList.update({
+      data: {
+        status: "VALIDATING",
+      },
+      where: {
+        id: emailId,
+        configurationId: jobId,
+        status: "PENDING",
+      },
+    });
+    const firstValidationResult = await validateEmailFirst(emailData.email);
+    if (!firstValidationResult.isValid) {
+      await prisma.toList.update({
+        data: {
+          status: "FAILED",
+        },
+        where: {
+          id: emailId,
+          configurationId: jobId,
+          status: "VALIDATING",
+        },
+      });
+      return;
+    }
+    const secondValidationResult = await validateEmailSecond(emailData.email);
+    if (!secondValidationResult) {
+      await prisma.toList.update({
+        data: {
+          status: "FAILED",
+        },
+        where: {
+          id: emailId,
+          configurationId: jobId,
+          status: "VALIDATING",
+        },
+      });
+      return;
+    }
+    const unsubscribeCheck = await prisma.toList.findUnique({
+      where: {
+        id: emailId,
+        configurationId: jobId,
+        unsubscribe: true,
+        status: "VALIDATING",
+      },
+    });
+    if (unsubscribeCheck) {
+      await prisma.toList.update({
+        data: {
+          status: "FAILED",
+        },
+        where: {
+          id: emailId,
+          configurationId: jobId,
+          status: "VALIDATING",
+          unsubscribe: true,
+        },
+      });
+      return;
+    }
+    await prisma.toList.update({
+      data: {
+        status: "VALIDATED"
+      },
+      where: {
+        id: emailId,
+        configurationId: jobId,
+        status: "VALIDATING",
+      },
+    });
+    workerModule.postMessage({ type: "start", data: { jobId, emailId } });
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("Connection closed"))
+      return;
+    console.error("Error processing job:", err);
+    await new Promise((res) => setTimeout(res, 1000));
+  } finally {
+    setImmediate(apiQueue);
   }
 })();

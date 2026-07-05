@@ -139,6 +139,7 @@ enum icalMethod {
 
 enum status {
   DRAFT
+  API
   VALIDATING
   SCHEDULED
   ONGOING

@@ -1,0 +1,1 @@
+export const apiWorker = new Map<string, Worker>();

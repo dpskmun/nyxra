@@ -1,10 +1,12 @@
 {
     "JOB_QUEUE": "nyxra:jobs:queue",
+    "API_QUEUE": "nyxra:api:queue",
     "JOB_LIST": "nyxra:jobs:list",
     "JOB_LIST_EMAIL": "nyxra:jobs:list:email",
     "JOB_LIST_EMAIL_VALIDATED": "nyxra:jobs:list:email:validated",
     "JOB_MAILER_DETAILS": "nyxra:jobs:mailer:details",
     "MX_CHECK": "nyxra:mx:check",
     "MX_LOCK": "nyxra:mx:lock",
-    "MX_HANDSHAKE": "nyxra:mx:handshake"
+    "MX_HANDSHAKE": "nyxra:mx:handshake",
+    "TO_LIST": "nyxra:toList"
 }

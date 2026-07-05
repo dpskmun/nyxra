@@ -6,6 +6,7 @@ export async function updateAllToList(configurationId: string) {
             status: "VALIDATING"
         },
         where: {
+            status: "PENDING",
             configurationId: configurationId
         }
     })
