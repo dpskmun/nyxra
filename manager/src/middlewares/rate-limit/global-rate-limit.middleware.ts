@@ -34,6 +34,7 @@ export const globalRateLimiter = rateLimit({
 
     return Response.json(
       {
+        event: "GLOBAL_RATE_LIMIT_EXCEEDED",
         success: false,
         message: "Too many requests. Please try again later",
       },

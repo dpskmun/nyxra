@@ -20,6 +20,7 @@ export const globalErrorHandler = (app: Elysia) => app
             message: err.message,
             stack: err.stack,
             error: err,
+            event: "GLOBAL_ERROR_HANDLER",
         })
 
         return {
@@ -27,6 +28,7 @@ export const globalErrorHandler = (app: Elysia) => app
             message: err.message,
             stack: err.stack,
             error: err,
+            event: "GLOBAL_ERROR_HANDLER",
         }
     }
 
@@ -34,17 +36,20 @@ export const globalErrorHandler = (app: Elysia) => app
         logger.error({
             status,
             message: err.message,
+            event: "GLOBAL_ERROR_HANDLER",
         })
 
         return {
             status,
             message: err.message,
+            event: "GLOBAL_ERROR_HANDLER",
         }
     }
 
     logger.error({
         success: false,
         message: "Something went wrong",
+        event: "GLOBAL_ERROR_HANDLER",
     })
 
     set.status = 500;
@@ -52,5 +57,6 @@ export const globalErrorHandler = (app: Elysia) => app
     return {
         success: false,
         message: "Something went wrong",
+        event: "GLOBAL_ERROR_HANDLER",
     }
 })

@@ -22,6 +22,7 @@ import { z } from "zod";
 
 export const envSchema = z.object({
     NODE_ENV: z.string(),
+    TESTING: z.boolean().default(false),
     PORT: z.coerce.number(),
     GLOBAL_RATE_LIMIT_WINDOW: z.string(),
     GLOBAL_RATE_LIMIT_SIZE: z.string()
