@@ -2,12 +2,11 @@ import { publicEncrypt, constants } from "crypto"
 import { readFileSync, existsSync } from "fs"
 import path from "path"
 
-export function unsubscribeUrl(campaignId: string, email: string, domain: string): { success: true; url: string } | { success: false; error: string } {
-    if (!campaignId || !email || !domain) return { success: false, error: "Campaign Id, Email and Domain Required" };
+export function unsubscribeUrl(emailId: string, email: string, domain: string): { success: true; url: string } | { success: false; error: string } {
+    if (!emailId || !email) return { success: false, error: "Email Id and Email Required" };
     const data = {
-        campaignId: `${campaignId}`,
+        emailId: `${emailId}`,
         email: `${email}`,
-        domain: `${domain}`
     }
     const filePath = path.join(__filename, "../../public_key.pem");
     if (!existsSync(filePath)) return { success: false, error: "key not found" };

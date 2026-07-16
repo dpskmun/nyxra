@@ -110,7 +110,7 @@ self.onmessage = async (event) => {
     const valueReplacerData = await csvEmailsMap(job.job.valuesCsv);
     try {
       const unsubscribeLink = await unsubscribeUrl(
-        job.job.campaignId,
+        emailData.data.id,
         emailData.data.email,
         job.job.fromEmail.split("@")[1],
       );
@@ -213,7 +213,7 @@ self.onmessage = async (event) => {
           "X-Mailer": "Nyxra",
           "Auto-Submitted": "auto-generated",
           "X-Auto-Response-Suppress": "All",
-          ...(["BULK", "LIST"].includes(job.job.emailType) &&
+          ...(["BULK"].includes(job.job.emailType) &&
           unsubscribeLink.success
             ? {
                 "List-Unsubscribe": `<${unsubscribeLink.url}>`,

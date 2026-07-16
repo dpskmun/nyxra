@@ -6,6 +6,7 @@ import { sendResponses } from "./utils/common/response/AppResponse";
 import { globalRateLimiter } from "./middlewares/rate-limit/global-rate-limit.middleware";
 import { globalErrorHandler } from "./middlewares/error.middleware";
 import { versionControl } from "./versions";
+import { unsubscribeRouter } from "./modules/unsubscribe/unsubscribe.route";
 
 export const app = new Elysia();
 
@@ -28,5 +29,6 @@ app.get("/health", ({ request, set }) => {
 app.use(globalRateLimiter)
 
 app.use(versionControl)
+app.use(unsubscribeRouter)
 
 app.use(globalErrorHandler)

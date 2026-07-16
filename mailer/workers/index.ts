@@ -142,7 +142,7 @@ self.onmessage = async (event) => {
     for (const email of validatedEmails.toList) {
       try {
         const unsubscribeLink = await unsubscribeUrl(
-          job.job.campaignId,
+          email.id,
           email.email,
           job.job.fromEmail.split("@")[1],
         );
