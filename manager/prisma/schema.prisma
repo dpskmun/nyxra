@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../.prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model configuration {
+  id        String   @id @default(uuid())
+  name     String
+  slug     String   @unique
+  campaignId String
+  emailType emailType
+  status status
+  category String
+  subCategory String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  scheduledAt DateTime?
+  isSes Boolean
+  smtpId String?
+  smtp SMTP? @relation(fields: [smtpId], references: [id])
+  sesConfigurationId String?
+  sesConfiguration sesConfiguration? @relation(fields: [sesConfigurationId], references: [id])
+  priority priority
+  headers mailHeader[]
+  fromName String?
+  fromEmail String
+  cc String[]
+  bcc String[]
+  replyTo String?
+  subject String
+  toList toList[]
+  htmlTemplate String?
+  textTemplate String?
+  valueReplacer Boolean @default(false)
+  valuesCsv String?
+  attachments attachments[]
+  icalEventId String?
+  icalEvent icalEvent? @relation(fields: [icalEventId], references: [id])
+  accessEndPoint Boolean @default(false)
+  accessEndPointUri String?
+  accessKeys accessKey[]
+}
+
+model accessKey {
+  id String @id @default(uuid())
+  name String
+  key String @unique
+  accessKeyStatus accessKeyStatus
+  revokedAt DateTime?
+  configurationId String
+  configuration configuration @relation(fields: [configurationId], references: [id])
+}
+
+model toList {
+  id String @id @default(uuid())
+  email String
+  configurationId String
+  status toSatus
+  unsubscribe Boolean @default(false)
+  configuration configuration @relation(fields: [configurationId], references: [id])
+  analyticsId String?
+  analytics analytics? @relation(fields: [analyticsId], references: [id])
+  @@unique([email, configurationId])
+}
+
+model attachments {
+  id String @id @default(uuid())
+  filename String
+  filelink String
+  configurationId String
+  configuration configuration @relation(fields: [configurationId], references: [id])
+}
+
+model SMTP {
+  id        String   @id @default(uuid())
+  host      String
+  port      Int
+  secure    Boolean
+  username  String
+  password  String
+  rateLimitMS Int
+  inUse     Boolean  @default(false)
+  configurations configuration[]
+}
+
+model sesConfiguration {
+  id        String   @id @default(uuid())
+  accessKey String
+  secretKey String
+  rateLimitMS Int
+  region    String
+  inUse     Boolean  @default(false)
+  configurations configuration[]
+}
+
+model icalEvent {
+  id String @id @default(uuid())
+  name String
+  method icalMethod
+  url String
+  configuration configuration[]
+}
+
+model mailHeader {
+  id String @id @default(uuid())
+  key String
+  value String
+  configurationId String
+  configuration configuration @relation(fields: [configurationId], references: [id])
+}
+
+enum emailType {
+  BULK
+  TRANSACTIONAL
+  LIST
+  SPAM
+}
+
+enum priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum icalMethod {
+  PUBLISH
+  REQUEST
+  CANCEL
+}
+
+enum status {
+  DRAFT
+  API
+  VALIDATING
+  SCHEDULED
+  ONGOING
+  VERIFYING
+  SENT
+}
+
+enum toSatus {
+  PENDING
+  VALIDATING
+  VALIDATED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum accessKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+model analytics {
+  id String @id @default(uuid())
+  sentCount Int @default(0)
+  failedCount Int @default(0)
+  openedCount Int @default(0)
+  clickedCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messageId String
+  list toList[]
+}

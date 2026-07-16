@@ -1,8 +1,8 @@
-import type Elysia from "elysia";
+import type { AnyElysia }  from "elysia";
 
 export interface VersionGateOptions {
     prefix: string;
-    plugin: Elysia<any>;
+    plugin: AnyElysia;
     enabled: boolean;
     type: "DEVELOPMENT" | "TESTING" | "PRODUCTION";
 }
