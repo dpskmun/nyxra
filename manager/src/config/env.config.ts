@@ -25,7 +25,9 @@ export const envSchema = z.object({
     TESTING: z.boolean().default(false),
     PORT: z.coerce.number().default(3000),
     GLOBAL_RATE_LIMIT_WINDOW: z.string(),
-    GLOBAL_RATE_LIMIT_SIZE: z.string()
+    GLOBAL_RATE_LIMIT_SIZE: z.string(),
+    MAILER_RATE_LIMIT_WINDOW: z.string(),
+    MAILER_RATE_LIMIT_SIZE: z.string()
 })
 
 const parsedEnv = envSchema.safeParse(process.env);

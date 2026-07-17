@@ -4,11 +4,13 @@ import { sendResponses } from "../../utils/common/response/AppResponse";
 import { prisma } from "../../lib/prisma";
 import { getRedis } from "../../lib/redis";
 import redisConf from "../../../redis.config.json";
+import { mailerRateLimiter } from "../../middlewares/rate-limit/mailer-rate-limit.middleware";
 
 export const mailRouter = new Elysia({
     prefix: "/mailer",
 })
 .use(authMiddleware)
+.use(mailerRateLimiter)
 .post("/send", async ({ configurationId, body, set }) => {
     if (!configurationId) return sendResponses(set, 401, "Unauthorized")
     if (!body.emailId) return sendResponses(set, 400, "Email ID is required");
