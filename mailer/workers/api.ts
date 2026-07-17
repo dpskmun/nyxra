@@ -257,7 +257,7 @@ self.onmessage = async (event) => {
       await prisma.analytics.create({
         data: {
           messageId: id.response,
-          list: {
+          toList: {
             connect: {
               id: emailData.data.id,
             },

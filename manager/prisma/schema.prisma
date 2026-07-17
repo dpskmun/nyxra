@@ -46,7 +46,6 @@ model configuration {
   icalEventId String?
   icalEvent icalEvent? @relation(fields: [icalEventId], references: [id])
   accessEndPoint Boolean @default(false)
-  accessEndPointUri String?
   accessKeys accessKey[]
 }
 
@@ -67,8 +66,7 @@ model toList {
   status toSatus
   unsubscribe Boolean @default(false)
   configuration configuration @relation(fields: [configurationId], references: [id])
-  analyticsId String?
-  analytics analytics? @relation(fields: [analyticsId], references: [id])
+  analytics analytics[]
   @@unique([email, configurationId])
 }
 
@@ -170,5 +168,6 @@ model analytics {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   messageId String
-  list toList[]
+  toListId String
+  toList toList @relation(fields: [toListId], references: [id])
 }
