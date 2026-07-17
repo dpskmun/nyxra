@@ -12,6 +12,8 @@ import { getinUse } from "./services/inUse.get";
 import { getApiWorker } from "./lib/apiWorker";
 import { apiWorker } from "./stores/apiWorker";
 import { getEmail } from "./services/getEmail";
+import { startWorker } from "./services/worrker";
+import { startPoller } from "./services/poller";
 
 const workerRedis = await getWorker();
 const apiWorkerRedis = await getApiWorker();
@@ -288,3 +290,7 @@ const apiWorkerRedis = await getApiWorker();
     setImmediate(apiQueue);
   }
 })();
+
+
+startPoller();
+startWorker();
