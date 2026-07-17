@@ -213,7 +213,7 @@ self.onmessage = async (event) => {
           "X-Mailer": "Nyxra",
           "Auto-Submitted": "auto-generated",
           "X-Auto-Response-Suppress": "All",
-          ...(["BULK"].includes(job.job.emailType) &&
+          ...(["BULK", "LIST"].includes(job.job.emailType) &&
           unsubscribeLink.success
             ? {
                 "List-Unsubscribe": `<${unsubscribeLink.url}>`,
