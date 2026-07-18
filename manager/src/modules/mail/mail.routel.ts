@@ -47,7 +47,6 @@ const bodytype = t.Object({
   bcc: t.Optional(t.Array(t.String())),
   replyTo: t.Optional(t.String()),
   subject: t.String(),
-  toList: t.String(),
   html: t.String(),
   txt: t.Optional(t.String()),
   valueReplacer: t.Optional(t.Boolean()),
@@ -87,15 +86,6 @@ export const configurationRouter = new Elysia({
       success: false,
       message: "Configuration already exists",
     });
-    const res = await fetch(body.toList);
-    const txt = (await res.text())
-      .split("\n")
-      .map((e) => e.trim())
-      .filter(Boolean);
-    const toListMain = txt.map((email) => ({
-      email,
-      status: "PENDING" as toSatus,
-    }));
     let smtpId: string | undefined;
     let sesConfigurationId: string | undefined;
     const isSes = !!body.transporter.ses;
@@ -148,9 +138,6 @@ export const configurationRouter = new Elysia({
         bcc: body.bcc,
         replyTo: body.replyTo,
         subject: body.subject,
-        toList: {
-          create: toListMain,
-        },
         htmlTemplate: body.html,
         textTemplate: body.txt,
         valueReplacer: body.valueReplacer || false,
