@@ -96,3 +96,10 @@ apiAttachments: [ (optional)
 
 Headers:
 `x-nyxra-key` : `your-api`
+
+
+# BULK MAILING WITHOUT API
+
+create data in configuration
+then put all email connected to configuration in github 
+run the workflow by lpop
