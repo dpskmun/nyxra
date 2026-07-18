@@ -21,7 +21,7 @@ export const mailRouter = new Elysia({
         }
     })
     if (!configurationGet) return sendResponses(set, 400, "Configuration ID Invalid");
-    await prisma.toList.create({
+    const emailcreat = await prisma.toList.create({
         data: {
             email: body.emailId,
             status: "PENDING",
@@ -35,7 +35,7 @@ export const mailRouter = new Elysia({
     const redis = await getRedis();
     await redis.lpush(redisConf.API_QUEUE, JSON.stringify({
         jobId: configurationId,
-        emailId: body.emailId,
+        emailId: emailcreat.id,
         ...(body.apiAttachments && { apiAttachments: body.apiAttachments }),
         ...(body.apiIcalEvent && { apiIcalEvent: body.apiIcalEvent }),
         ...(body.apiMailHeaders && { apiMailHeaders: body.apiMailHeaders }),

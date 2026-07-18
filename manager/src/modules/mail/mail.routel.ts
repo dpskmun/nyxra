@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../../lib/prisma";
 import { toSatus } from "../../../.prisma/client";
-import crypto from "crypto"
+import crypto from "crypto";
 import { sendResponses } from "../../utils/common/response/AppResponse";
 
 const smtpsechema = t.Object({
@@ -71,7 +71,6 @@ const bodytype = t.Object({
     }),
   ),
 });
-
 export const configurationRouter = new Elysia({
   prefix: "/mail",
 }).post(
@@ -82,10 +81,11 @@ export const configurationRouter = new Elysia({
         slug: body.slug,
       },
     });
-    if (data) return sendResponses(set, 200, {
-      success: false,
-      message: "Configuration already exists",
-    });
+    if (data)
+      return sendResponses(set, 200, {
+        success: false,
+        message: "Configuration already exists",
+      });
     let smtpId: string | undefined;
     let sesConfigurationId: string | undefined;
     const isSes = !!body.transporter.ses;
@@ -98,23 +98,27 @@ export const configurationRouter = new Elysia({
           username: body.transporter.smtp.user,
           password: body.transporter.smtp.pass,
           rateLimitMS: body.transporter.smtp.rateLimitMS,
-        }
-      })
+        },
+      });
       smtpId = smtp.id;
     } else if (body.transporter.ses) {
-      const ses  = await prisma.sesConfiguration.create({
+      const ses = await prisma.sesConfiguration.create({
         data: {
           region: body.transporter.ses.region,
           accessKey: body.transporter.ses.accessKeyId,
           secretKey: body.transporter.ses.secretAccessKey,
           rateLimitMS: body.transporter.ses.rateLimitMS,
-        }
-      })
+        },
+      });
       sesConfigurationId = ses.id;
     }
-    const headersEntries = body.headers ? Object.entries(body.headers as Record<string, string>).map(([key, value]) => ({ key, value })) : [];
-    const name = crypto.randomBytes(8).toString("hex")
-    const key = crypto.randomBytes(36).toString("hex")
+    const headersEntries = body.headers
+      ? Object.entries(body.headers as Record<string, string>).map(
+          ([key, value]) => ({ key, value }),
+        )
+      : [];
+    const name = crypto.randomBytes(8).toString("hex");
+    const key = crypto.randomBytes(36).toString("hex");
     await prisma.configuration.create({
       data: {
         name: body.name,
@@ -127,11 +131,15 @@ export const configurationRouter = new Elysia({
         scheduledAt: body.scheduleAt ? new Date(body.scheduleAt) : null,
         isSes,
         ...(smtpId ? { smtp: { connect: { id: smtpId } } } : {}),
-        ...(sesConfigurationId ? { sesConfiguration: { connect: { id: sesConfigurationId } } } : {}),
+        ...(sesConfigurationId
+          ? { sesConfiguration: { connect: { id: sesConfigurationId } } }
+          : {}),
         priority: body.priority,
-        headers: headersEntries.length ? {
-          create: headersEntries
-        } : undefined,
+        headers: headersEntries.length
+          ? {
+              create: headersEntries,
+            }
+          : undefined,
         fromName: body.from.name,
         fromEmail: body.from.email,
         cc: body.cc,
@@ -164,18 +172,18 @@ export const configurationRouter = new Elysia({
           create: {
             name: name,
             key: key,
-            accessKeyStatus: "ACTIVE"
-          }
-        }
+            accessKeyStatus: "ACTIVE",
+          },
+        },
       },
     });
-    sendResponses(set, 200, {
+    return sendResponses(set, 200, {
       success: true,
       message: "Configuration created successfully",
       data: {
         keyName: name,
         accessKey: key,
-      }
+      },
     });
   },
   {

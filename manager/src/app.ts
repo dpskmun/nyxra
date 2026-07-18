@@ -25,7 +25,15 @@ app.get("/health", ({ request, set }) => {
         }
     })
 });
-
+app.get("/", ({ request, set }) => {
+    return sendResponses(set, 200, {
+        success: true,
+        message: "Server is healthy",
+        data: {
+            status: "HEALTHY"
+        }   
+    })
+})
 app.use(globalRateLimiter)
 
 app.use(versionControl)

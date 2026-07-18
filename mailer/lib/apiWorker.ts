@@ -13,6 +13,7 @@ export async function getApiWorker(): Promise<Redis> {
     username: process.env.REDIS_USERNAME || undefined,
     password: process.env.REDIS_PASSWORD || undefined,
     db: parseInt(process.env.REDIS_DB || "0", 10),
+    maxRetriesPerRequest: null,
   });
   const client = worker;
   connecting = new Promise<Redis>((resolve, reject) => {
