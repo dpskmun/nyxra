@@ -102,7 +102,7 @@ in the above code, please fill smtp or ses and remove one
 
 Dont create custom config i have already made for you
 x-nyxra-key
-```0530cfd644080626e74296503d44786212ac4189160750c33f15fa9f6716fe779b41167b```
+```2aee90a92f98d0be7394654c27a397c7702b47183ba9e015362fe6bcd607a8aa934d01c1```
 now to send replace key with my key 
 change email name and just send the req 
 
@@ -110,7 +110,7 @@ there is a issue currently like you can only send 1 mail per 1 email address in 
 this is because its was structred in bulk mailing but backend code include sending bulk mailing and sending mail through api it would be fixed later 
 ```
 curl --location 'https://unsubscribe.dpskmun.com/v1/mailer/send' \
---header 'x-nyxra-key: 0530cfd644080626e74296503d44786212ac4189160750c33f15fa9f6716fe779b41167b' \
+--header 'x-nyxra-key: 2aee90a92f98d0be7394654c27a397c7702b47183ba9e015362fe6bcd607a8aa934d01c1' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "emailId": "hardikgupta2232@gmail.com",
@@ -122,3 +122,6 @@ curl --location 'https://unsubscribe.dpskmun.com/v1/mailer/send' \
     ]
 }'
 ```
+
+Video
+[Watch the demo on YouTube](https://youtu.be/Sc0n_hJd4Bo)
