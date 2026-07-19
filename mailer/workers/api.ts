@@ -93,7 +93,10 @@ self.onmessage = async (event) => {
     );
     const mailTransporter = mailerInstance.getTransporterInstance();
     const jobHeaders = Object.fromEntries(
-      job.job.headers.map(({ key, value }) => [key, value]),
+      job.job.headers.map(({ key, value }: { key: string; value: string }) => [
+        key,
+        value,
+      ]),
     );
     let jobText = "";
     if (job.job.textTemplate)
@@ -121,16 +124,20 @@ self.onmessage = async (event) => {
           const userData = valueReplacerData.data[emailData.data.email][0];
           Object.entries(userData).forEach(([key, value]) => {
             const placeholder = new RegExp(`\\{\\^\\(${key}\\)\\^\\}`, "gi");
-            if (jobHtml) htmlContent = htmlContent.replaceAll(placeholder, value);
-            if (jobText) textContent = textContent.replaceAll(placeholder, value);
+            if (jobHtml)
+              htmlContent = htmlContent.replaceAll(placeholder, value);
+            if (jobText)
+              textContent = textContent.replaceAll(placeholder, value);
           });
         }
         if (data.apiValueReplace) {
           data.apiValueReplace.forEach(
             ({ key, value }: { key: string; value: string }) => {
               const placeholder = new RegExp(`\\{\\^\\(${key}\\)\\^\\}`, "gi");
-              if (jobHtml) htmlContent = htmlContent.replaceAll(placeholder, value);
-              if (jobText) textContent = textContent.replaceAll(placeholder, value);
+              if (jobHtml)
+                htmlContent = htmlContent.replaceAll(placeholder, value);
+              if (jobText)
+                textContent = textContent.replaceAll(placeholder, value);
             },
           );
         }
@@ -152,10 +159,12 @@ self.onmessage = async (event) => {
         }
       }
       const attachementsAppend = [
-        ...(job.job.attachments ?? []).map((attachement) => ({
-          filename: attachement.filename,
-          path: attachement.filelink,
-        })),
+        ...(job.job.attachments ?? []).map(
+          (attachement: { filename: string; filelink: string }) => ({
+            filename: attachement.filename,
+            path: attachement.filelink,
+          }),
+        ),
         ...(data.apiAttachments ?? []).map(
           (attachement: { filename: string; filelink: string }) => ({
             filename: attachement.filename,
@@ -179,7 +188,7 @@ self.onmessage = async (event) => {
         : null;
       const icalEvent = dbIcalEvent || apiIcalEvent;
       const apiHeader = Object.fromEntries(
-        (data.apiMailHeaders as { key: string; value: string }[] ?? []).map(
+        ((data.apiMailHeaders as { key: string; value: string }[]) ?? []).map(
           ({ key, value }) => [key, value],
         ),
       );
