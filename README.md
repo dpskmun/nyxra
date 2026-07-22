@@ -16,7 +16,7 @@ I know its a bit complicated but msg me on slack I am happy to explaining you
 
 If you have smtp or ses creds put here only 1 smtp or ses and change other config if you want
 
-https://unsubscribe.dpskmun.com/v1/mail/create
+```https://unsubscribe.dpskmun.com/v1/mail/create```
 ```
 {
   "name": "dev",
