@@ -128,3 +128,5 @@ Video
 
 Read the docs
 [Docs](./DOCS.md)
+
+![Flow](https://i.ibb.co/LXXydTyj/Screenshot-2026-07-23-at-12-22-06-AM.png)
