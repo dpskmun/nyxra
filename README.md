@@ -125,3 +125,6 @@ curl --location 'https://unsubscribe.dpskmun.com/v1/mailer/send' \
 
 Video
 [Watch the demo on YouTube](https://youtu.be/Sc0n_hJd4Bo)
+
+Read the docs
+[Docs](./DOCS.md)
